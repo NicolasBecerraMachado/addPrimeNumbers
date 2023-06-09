@@ -7,7 +7,7 @@ import(
 	"strings"
 	"math"
 	//"sync"
-	//"time"
+	"time"
 )
 
 var tokens = make(chan struct{}, 5000000)
@@ -30,15 +30,21 @@ func isPrime(n int){
 func adder(){
 	sum := 0
 	for len(add) != 0 || len(tokens) != 0{
-		//fmt.Println("len toks = ", len(tokens))
 		sum += <- add
-		//fmt.Println("sum = ",sum)
 	}
 	added <- sum
-	//fmt.Println("added :)")
+}
+
+// func to calculate and print execution time
+func exeTime(name string) func() {
+	start := time.Now()
+	return func() {
+		fmt.Printf("%s execution time: %v\n", name, time.Since(start))
+	}
 }
 
 func main(){
+	defer exeTime("main")()
 	n,err := strconv.Atoi(strings.Split(os.Args[1],":")[1])
 	if err != nil{
 		os.Exit(1)
