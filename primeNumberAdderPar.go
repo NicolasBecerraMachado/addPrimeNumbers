@@ -29,7 +29,7 @@ func isPrime(n int){
 
 func adder(){
 	sum := 0
-	for len(add) != 0{
+	for len(add) != 0 || len(tokens) != 0{
 		//fmt.Println("len toks = ", len(tokens))
 		sum += <- add
 		//fmt.Println("sum = ",sum)
