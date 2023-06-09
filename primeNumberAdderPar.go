@@ -11,63 +11,53 @@ import(
 )
 
 var tokens = make(chan struct{}, 5000000)
+var added = make(chan int, 1)
+var add = make(chan int, 5000000)
 
-func isPrime(n int, add chan int){
+func isPrime(n int){
 	stop := int(math.Sqrt(float64(n)))
-	//fmt.Println("for n = ", n, " stop = ", stop)
 	for i := 2 ; i < stop+1; i++{
 		if n%i == 0{
-			//fmt.Println("about to evict tokens")
 			<- tokens
-			//fmt.Println("DONE")
 			return
 		}
 	}
 	add <- n
-	//fmt.Println("about to evict tokens")
 	<- tokens
-	//fmt.Println("DONE")
 }
 
 
-func adder(add chan int)(int){
+func adder(){
 	sum := 0
 	for len(add) != 0{
+		//fmt.Println("len toks = ", len(tokens))
 		sum += <- add
+		//fmt.Println("sum = ",sum)
 	}
-	return sum
+	added <- sum
+	//fmt.Println("added :)")
 }
 
 func main(){
-
-	add := make(chan int, 5000000)
-
 	n,err := strconv.Atoi(strings.Split(os.Args[1],":")[1])
 	if err != nil{
-		//fmt.Println("invalid arg")
 		os.Exit(1)
 	}
 
 	if n < 2{
-		//fmt.Println(0)
 		return
 	}
 
 	for i := 2; i < n; i++{
 		tokens <- struct{}{}
-		//fmt.Println("tok send")
-		go isPrime(i, add)
+		go isPrime(i)
 	}
 	
-	//fmt.Println("tokens = " , len(tokens))
-	//fmt.Println("addL = ", len(add))
+	//fmt.Println("we did it boyz")
 
-	for len(tokens) != 0 {
-		//fmt.Println("waiting for tokens, len = " ,len(tokens))
-		//time.Sleep(1 * time.Second)
-	}
+	go adder()
 
-	sum := adder(add)
+	sum := <- added
 
 	fmt.Println(sum)
 }
